@@ -78,9 +78,8 @@ public class FilmController {
                 LOGGER.error("Обновление данных фильма. Продолжительность фильма должна быть положительным числом");
                 throw new ValidationException("Продолжительность фильма должна быть положительным числом");
             }
-
             films.put(oldFilm.getId(), newFilm);
-            return oldFilm;
+            return newFilm;
         } else {
             LOGGER.error("Обновление данных фильма. Пост с id = {} не найден", newFilm.getId());
             throw new ValidationException("Пост с id = " + newFilm.getId() + " не найден");

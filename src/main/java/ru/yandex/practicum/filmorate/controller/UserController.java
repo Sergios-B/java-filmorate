@@ -75,9 +75,8 @@ public class UserController {
                 LOGGER.error("Обновление данных пользователя. Дата рождения не может быть в будущем");
                 throw new ValidationException("дата рождения не может быть в будущем");
             }
-
             users.put(oldUser.getId(), newUser);
-            return oldUser;
+            return newUser;
         } else {
             LOGGER.error("Обновление данных пользователя. Пользователь с id = {} не найден", newUser.getId());
             throw new ValidationException("Пользователь с id = " + newUser.getId() + " не найден");
