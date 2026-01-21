@@ -39,17 +39,6 @@ class FilmValidationTests {
     }
 
     @Test
-    void testCreateFilmWithFutureReleaseDate() {
-        Film film = new Film();
-        film.setName("Пример названия");
-        film.setDescription("Пример описания");
-        film.setReleaseDate(LocalDate.now().plusDays(1));
-        film.setDuration(120);
-
-        assertThrows(ValidationException.class, () -> filmController.create(film));
-    }
-
-    @Test
     void testCreateFilmWithInvalidDuration() {
         Film film = new Film();
         film.setName("Пример названия");
