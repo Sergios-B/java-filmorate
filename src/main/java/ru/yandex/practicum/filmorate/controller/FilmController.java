@@ -36,7 +36,7 @@ public class FilmController {
             LOGGER.error("Добавление фильма. Описание не может быть пустым или длиннее 200 символов");
             throw new ValidationException("Описание не может быть пустым или длиннее 200 символов");
         }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 12)) || film.getReleaseDate().isAfter(LocalDate.now())) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             LOGGER.error("Добавление фильма. Дата релиза — не раньше 28 декабря 1895 года");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
@@ -81,8 +81,8 @@ public class FilmController {
             films.put(oldFilm.getId(), newFilm);
             return newFilm;
         } else {
-            LOGGER.error("Обновление данных фильма. Пост с id = {} не найден", newFilm.getId());
-            throw new ValidationException("Пост с id = " + newFilm.getId() + " не найден");
+            LOGGER.error("Обновление данных фильма. Пост с указанным id не найден");
+            throw new ValidationException("Пост с указанным id не найден");
         }
     }
 }
