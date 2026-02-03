@@ -6,10 +6,10 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-
     private final Map<Long, User> users = new HashMap<>();
     private final UserService userService;
 
@@ -20,21 +20,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addUser(User user) {
-        if (!users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-        }
-    }
-
-    @Override
-    public void removeUser(long userId) {
-        users.remove(userId);
+        users.put(user.getId(), user);
     }
 
     @Override
     public void modifyUser(User updatedUser) {
-        if (users.containsKey(updatedUser.getId())) {
-            users.put(updatedUser.getId(), updatedUser);
-        }
+        users.put(updatedUser.getId(), updatedUser);
     }
 
     @Override
@@ -43,11 +34,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public long getMaxUserId() {
-        return users.keySet().stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+    public User findUserByID(long id) {
+        return users.get(id);
     }
 
     @Override
@@ -56,13 +44,14 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findUserByID(long id) {
-        return users.get(id);
+    public long getMaxUserId() {
+        return users.keySet().stream().mapToLong(id -> id).max().orElse(0);
     }
 
     @Override
     public boolean addFriend(long id, long idFriend) {
-        return userService.addFriend(id, idFriend);
+        userService.addFriend(id, idFriend);
+        return true;
     }
 
     @Override
@@ -71,20 +60,23 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<User> getCommonFriends(Long id, Long idUser) {
-        Set<User> ourFriends = new HashSet<>();
-        for (Long idOurFriend : userService.getCommonFriends(id, idUser)) {
-            ourFriends.add(users.get(idOurFriend));
-        }
-        return ourFriends;
+    public Collection<User> getCommonFriends(Long id, Long idUser) {
+        return userService.getCommonFriends(id, idUser).stream()
+                .map(users::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Set<User> getMyFriends(Long id) {
-        Set<User> myFriends = new HashSet<>();
-        for (Long idFriend : userService.getMyFriends(id)) {
-            myFriends.add(users.get(idFriend));
-        }
-        return myFriends;
+    public Collection<User> getMyFriends(Long id) {
+        return userService.getMyFriends(id).stream()
+                .map(users::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void removeUser(long userId) {
+        users.remove(userId);
     }
 }
