@@ -5,9 +5,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-/**
- * Film.
- */
 @Data
 @EqualsAndHashCode(of = "id")
 @AllArgsConstructor

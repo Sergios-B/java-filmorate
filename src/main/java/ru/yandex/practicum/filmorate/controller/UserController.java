@@ -4,25 +4,34 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private final UserStorage userStorage;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserStorage userStorage, UserService userService) {
+        this.userStorage = userStorage;
+        this.userService = userService;
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
-    private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> findAllUser() {
-        return users.values();
+        return userStorage.findAllUsers();
     }
 
     @PostMapping
@@ -43,23 +52,18 @@ public class UserController {
             throw new ValidationException("дата рождения не может быть в будущем");
         }
         user.setId(getNextId());
-        users.put(user.getId(), user);
+        userStorage.addUser(user);
         return user;
     }
 
     private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+        long currentMaxId = userStorage.getMaxUserId();
         return ++currentMaxId;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User newUser) {
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
+        if (userStorage.findUserById(newUser.getId())) {
             if (newUser.getEmail() == null || newUser.getEmail().isBlank() || !newUser.getEmail().contains("@")) {
                 LOGGER.error("Обновление данных пользователя. Электронная почта не может быть пустой и должна содержать символ @");
                 throw new ValidationException("электронная почта не может быть пустой и должна содержать символ @");
@@ -75,11 +79,60 @@ public class UserController {
                 LOGGER.error("Обновление данных пользователя. Дата рождения не может быть в будущем");
                 throw new ValidationException("дата рождения не может быть в будущем");
             }
-            users.put(oldUser.getId(), newUser);
+            userStorage.modifyUser(newUser);
             return newUser;
         } else {
-            LOGGER.error("Обновление данных пользователя. Пользователь с id = {} не найден", newUser.getId());
-            throw new ValidationException("Пользователь с id = " + newUser.getId() + " не найден");
+            LOGGER.error("Обновление данных пользователя. Пользователь с указанным id не найден");
+            throw new ValidationException("Пользователь с указанным ID не найден");
         }
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable Long id) {
+        User user = userStorage.findUserByID(id);
+        if (user == null) {
+            LOGGER.error("Поиск пользователя. Пользователь с указанным id не найден");
+            throw new ValidationException("Пользователь с указанным ID не найден");
+        }
+        return user;
+    }
+
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable Long friendId) {
+        if (userService.getMyFriends(friendId) != null){
+            LOGGER.info("Добавление друга, который уже есть в друзьях.");
+            throw new ValidationException("Пользователь уже у вас в друзьях");
+        }
+        if (!userStorage.addFriend(id, friendId)) {
+            LOGGER.error("Не удалось добавить пользователя в друзья пользователя");
+            throw new ValidationException("Не удалось добавить в друзья");
+        }
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        if (!(userStorage.findUserById(id) || userStorage.findUserById(friendId))){
+            LOGGER.error("Удаление друга. Пользователь или друг не найден");
+            throw new ValidationException("Не удалось провести операцию");
+        }
+        userStorage.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public Collection<User> getFriends(@PathVariable Long id) {
+        if (!userStorage.findUserById(id)){
+            LOGGER.error("Поиск всех друзей. Пользователь не найден");
+            throw new ValidationException("Пользователь с указанным ID не найден");
+        }
+        return userStorage.getMyFriends(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        if (!userStorage.findUserById(id) || !userStorage.findUserById(otherId)){
+            LOGGER.error("Поиск общих друзей. Пользователь не найден");
+            throw new ValidationException("Пользователь не найден");
+        }
+        return userStorage.getCommonFriends(id, otherId);
     }
 }
