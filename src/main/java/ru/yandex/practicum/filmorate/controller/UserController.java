@@ -91,17 +91,22 @@ public class UserController {
 
     private void validate(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            log.warn("Валидация не пройдена: некорректный email '{}'", user.getEmail());
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         }
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            log.warn("Валидация не пройдена: некорректный логин '{}'", user.getLogin());
             throw new ValidationException("Логин не может быть пустым или содержать пробелы");
         }
         if (user.getName() == null || user.getName().isBlank()) {
+            log.info("Имя пользователя пустое, в качестве имени будет использован логин: {}", user.getLogin());
             user.setName(user.getLogin());
         }
         if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+            log.warn("Валидация не пройдена: дата рождения {} в будущем", user.getBirthday());
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
+        log.info("Валидация пользователя '{}' пройдена успешно.", user.getLogin());
     }
 
     private long getNextId() {

@@ -94,17 +94,22 @@ public class FilmController {
 
     private void validate(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
+            log.warn("Валидация не пройдена: название фильма пустое.");
             throw new ValidationException("Название не может быть пустым");
         }
         if (film.getDescription() != null && film.getDescription().length() > 200) {
-            throw new ValidationException("Максимальная длина описания — 200 символов");
+            log.warn("Валидация не пройдена: описание фильма {} символов (макс. 200).", film.getDescription().length());
+            throw new ValidationException("Максимальная длина описания — 200 символов.");
         }
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(CINEMA_BIRTHDAY)) {
+            log.warn("Валидация не пройдена: дата релиза {} раньше допустимой.", film.getReleaseDate());
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
         if (film.getDuration() <= 0) {
+            log.warn("Валидация не пройдена: продолжительность фильма {} должна быть больше 0.", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
+        log.info("Валидация фильма '{}' пройдена успешно.", film.getName());
     }
 
     private long getNextId() {
