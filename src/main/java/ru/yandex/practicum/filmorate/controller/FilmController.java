@@ -37,7 +37,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@RequestBody Film film) {
         log.info("Добавление фильма: {}", film.getName());
         validate(film);
         film.setId(getNextId());
@@ -46,7 +46,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
+    public Film update(@RequestBody Film newFilm) {
         log.info("Обновление фильма с id: {}", newFilm.getId());
         if (filmStorage.findById(newFilm.getId()) == null) {
             throw new NotFoundException("Фильм с id " + newFilm.getId() + " не найден");
