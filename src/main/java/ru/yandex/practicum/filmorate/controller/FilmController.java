@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,9 +97,10 @@ public class FilmController {
             log.warn("Валидация не пройдена: название фильма пустое.");
             throw new ValidationException("Название не может быть пустым");
         }
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
-            log.warn("Валидация не пройдена: описание фильма {} символов (макс. 200).", film.getDescription().length());
-            throw new ValidationException("Максимальная длина описания — 200 символов.");
+        String description = film.getDescription();
+        if (description == null || description.isBlank() || description.length() > 200) {
+            log.warn("Валидация не пройдена: некорректное описание.");
+            throw new ValidationException("Описание не может быть пустым или длиннее 200 символов.");
         }
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(CINEMA_BIRTHDAY)) {
             log.warn("Валидация не пройдена: дата релиза {} раньше допустимой.", film.getReleaseDate());
