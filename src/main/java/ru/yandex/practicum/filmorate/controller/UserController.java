@@ -99,7 +99,7 @@ public class UserController {
 
     @PutMapping("/users/{id}/friends/{friendId}")
     public void addFriend(@PathVariable long id, @PathVariable Long friendId) {
-        if (userService.getMyFriends(friendId) != null){
+        if (userService.getMyFriends(friendId) != null) {
             LOGGER.info("Добавление друга, который уже есть в друзьях.");
             throw new ValidationException("Пользователь уже у вас в друзьях");
         }
@@ -111,7 +111,7 @@ public class UserController {
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        if (!(userStorage.findUserById(id) || userStorage.findUserById(friendId))){
+        if (!(userStorage.findUserById(id) || userStorage.findUserById(friendId))) {
             LOGGER.error("Удаление друга. Пользователь или друг не найден");
             throw new ValidationException("Не удалось провести операцию");
         }
@@ -120,7 +120,7 @@ public class UserController {
 
     @GetMapping("/users/{id}/friends")
     public Collection<User> getFriends(@PathVariable Long id) {
-        if (!userStorage.findUserById(id)){
+        if (!userStorage.findUserById(id)) {
             LOGGER.error("Поиск всех друзей. Пользователь не найден");
             throw new ValidationException("Пользователь с указанным ID не найден");
         }
@@ -129,7 +129,7 @@ public class UserController {
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
     public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        if (!userStorage.findUserById(id) || !userStorage.findUserById(otherId)){
+        if (!userStorage.findUserById(id) || !userStorage.findUserById(otherId)) {
             LOGGER.error("Поиск общих друзей. Пользователь не найден");
             throw new ValidationException("Пользователь не найден");
         }

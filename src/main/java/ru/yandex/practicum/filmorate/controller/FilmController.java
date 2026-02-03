@@ -109,7 +109,7 @@ public class FilmController {
 
     @PutMapping("/{filmId}/like/{userId}")
     public void addLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        if (filmStorage.findById(filmId) == null){
+        if (filmStorage.findById(filmId) == null) {
             LOGGER.error("Новый лайк. Фильм с указанным ID не найден");
             throw new ValidationException("Фильм с указанным ID не найден");
         }
@@ -118,7 +118,7 @@ public class FilmController {
 
     @DeleteMapping("/{filmId}/like/{userId}")
     public void removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        if (filmStorage.findById(filmId) == null){
+        if (filmStorage.findById(filmId) == null) {
             LOGGER.error("Удаление лайка. Фильм с указанным ID не найден");
             throw new ValidationException("Фильм с указанным ID не найден");
         }
