@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +27,11 @@ public class FilmController {
     public FilmController(FilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;
+    }
+
+    @GetMapping
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
     }
 
     @PostMapping
@@ -43,24 +49,24 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable Long id) {
+    public Film getFilmById(@Valid @PathVariable Long id) {
         Film film = filmStorage.findById(id);
         if (film == null) throw new NotFoundException("Фильм не найден");
         return film;
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
-        filmService.addLike(id, userId); // Проверка внутри сервиса
+    public void addLike(@Valid @PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
-        filmService.removeLike(id, userId); // Проверка внутри сервиса
+    public void removeLike(@Valid @PathVariable Long id, @PathVariable Long userId) {
+        filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive Integer count) {
+    public List<Film> getPopular(@Valid @RequestParam(defaultValue = "10") @Positive Integer count) {
         return filmService.getPopular(count);
     }
 

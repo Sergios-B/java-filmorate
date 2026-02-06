@@ -22,4 +22,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleException(Exception e) {
         return ResponseEntity.status(500).body(Map.of("error", "Произошла внутренняя ошибка"));
     }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(
+            org.springframework.web.bind.MethodArgumentNotValidException e) {
+        return ResponseEntity.status(400).body(Map.of(
+                "error", "Ошибка валидации через аннотации",
+                "message", e.getBindingResult().getAllErrors().get(0).getDefaultMessage()
+        ));
+    }
+
 }

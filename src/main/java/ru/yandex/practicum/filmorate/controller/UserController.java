@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -31,21 +32,21 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         log.info("Создание пользователя: {}", user.getLogin());
         validate(user);
         return userStorage.addUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User newUser) {
+    public User updateUser(@Valid @RequestBody User newUser) {
         log.info("Обновление пользователя с id: {}", newUser.getId());
         validate(newUser);
         return userStorage.modifyUser(newUser);
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
+    public User getUserById(@Valid @PathVariable Long id) {
         User user = userStorage.findUserByID(id);
         if (user == null) {
             throw new NotFoundException("Пользователь с id " + id + " не найден");
