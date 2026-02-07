@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,5 +32,17 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleThrowable(final Throwable e) {
         log.error("Непредвиденная ошибка 500: ", e);
         return Map.of("error", "Произошла непредвиденная ошибка", "message", e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMethodArgumentNotValid(final MethodArgumentNotValidException e) {
+        // Извлекаем сообщение о первой ошибке валидации
+        String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        log.error("Ошибка валидации через аннотации 400: {}", message);
+        return Map.of(
+                "error", "Ошибка валидации данных",
+                "message", message != null ? message : "Некорректно заполнены поля"
+        );
     }
 }
