@@ -1,35 +1,35 @@
 package ru.yandex.practicum.filmorate.exception;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import java.util.Map;
 
-@ControllerAdvice
+@Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, String>> handleValidationException(ValidationException e) {
-        return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleValidation(final ValidationException e) {
+        log.error("Ошибка валидации 400: {}", e.getMessage());
+        return Map.of("error", "Ошибка валидации", "message", e.getMessage());
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFoundException(NotFoundException e) {
-        return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleNotFound(final NotFoundException e) {
+        log.error("Объект не найден 404: {}", e.getMessage());
+        return Map.of("error", "Искомый объект не найден", "message", e.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleException(Exception e) {
-        return ResponseEntity.status(500).body(Map.of("error", "Произошла внутренняя ошибка"));
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleThrowable(final Throwable e) {
+        log.error("Непредвиденная ошибка 500: ", e);
+        return Map.of("error", "Произошла непредвиденная ошибка", "message", e.getMessage());
     }
-
-    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(
-            org.springframework.web.bind.MethodArgumentNotValidException e) {
-        return ResponseEntity.status(400).body(Map.of(
-                "error", "Ошибка валидации через аннотации",
-                "message", e.getBindingResult().getAllErrors().get(0).getDefaultMessage()
-        ));
-    }
-
 }

@@ -1,103 +1,50 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Long, User> users = new HashMap<>();
-    private long currentId = 1;
+    private final Map<Integer, User> users = new HashMap<>();
+    private int idGenerator = 0;
 
     @Override
-    public User addUser(User user) {
-        user.setId(currentId++);
+    public User add(User user) {
+        user.setId(++idGenerator);
         users.put(user.getId(), user);
+        log.info("Добавлен новый пользователь: {}", user);
         return user;
     }
 
     @Override
-    public User modifyUser(User updatedUser) {
-        if (!users.containsKey(updatedUser.getId())) {
-            throw new NotFoundException("Пользователь с id " + updatedUser.getId() + " не найден");
+    public User update(User user) {
+        if (!users.containsKey(user.getId())) {
+            log.error("Пользователь с id {} не найден", user.getId());
+            throw new NotFoundException("Пользователь с id " + user.getId() + " не существует");
         }
-        users.put(updatedUser.getId(), updatedUser);
-        return updatedUser;
+        users.put(user.getId(), user);
+        log.info("Обновлен пользователь: {}", user);
+        return user;
     }
 
     @Override
-    public Collection<User> findAllUsers() {
-        return users.values();
+    public void delete(Integer id) {
+        users.remove(id);
+        log.info("Пользователь с id {} удален", id);
     }
 
     @Override
-    public User findUserByID(long id) {
-        return users.get(id);
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public void removeUser(long userId) {
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
-        users.remove(userId);
-    }
-
-    @Override
-    public boolean addFriend(long id, long idFriend) {
-        User user = findUserByID(id);
-        User friend = findUserByID(idFriend);
-        if (user != null && friend != null) {
-            user.getFriends().add(idFriend);
-            friend.getFriends().add(id);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void removeFriend(long id, long idFriend) {
-        User user = findUserByID(id);
-        User friend = findUserByID(idFriend);
-        if (user != null && friend != null) {
-            user.getFriends().remove(idFriend);
-            friend.getFriends().remove(id);
-        }
-    }
-
-    @Override
-    public Collection<User> getMyFriends(Long id) {
-        User user = findUserByID(id);
-        if (user == null) return Collections.emptyList();
-        return user.getFriends().stream()
-                .map(this::findUserByID)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<User> getCommonFriends(Long id, Long otherId) {
-        User user = findUserByID(id);
-        User other = findUserByID(otherId);
-        if (user == null || other == null) return Collections.emptyList();
-
-        Set<Long> commonIds = new HashSet<>(user.getFriends());
-        commonIds.retainAll(other.getFriends());
-
-        return commonIds.stream()
-                .map(this::findUserByID)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean findUserById(long id) {
-        return users.containsKey(id);
-    }
-
-    @Override
-    public long getMaxUserId() {
-        return currentId - 1;
+    public Optional<User> findById(Integer id) {
+        return Optional.ofNullable(users.get(id));
     }
 }
