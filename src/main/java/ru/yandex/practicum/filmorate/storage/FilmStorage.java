@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
+
 import java.util.Collection;
 import java.util.Optional;
 
@@ -22,5 +23,5 @@ public interface FilmStorage {
 
     Long removeLike(Long filmId, Long userId);
 
-    public boolean contains(Long id);
+    boolean contains(Long id);
 }

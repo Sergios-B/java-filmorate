@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -57,8 +58,8 @@ public abstract class BaseDbStorage<T> {
 
     protected Optional<T> findOptional(String sql, Object... args) {
         try {
-            return Optional.ofNullable(queryForObject(sql, args));
-        } catch (Exception e) {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, rowMapper, args));
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
