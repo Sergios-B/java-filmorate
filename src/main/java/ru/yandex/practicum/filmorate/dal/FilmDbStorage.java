@@ -110,7 +110,10 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                         ps.setLong(1, film.getId());
                         ps.setLong(2, genres.get(i).getId());
                     }
-                    public int getBatchSize() { return genres.size(); }
+
+                    public int getBatchSize() {
+                        return genres.size();
+                    }
                 });
     }
 
@@ -139,8 +142,26 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         films.forEach(film -> film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>())));
     }
 
-    @Override public Film delete(Long id) { executeUpdate(DELETE, id); return null; }
-    @Override public Long addLike(Long fId, Long uId) { executeUpdate(ADD_LIKE, fId, uId); return fId; }
-    @Override public Long removeLike(Long fId, Long uId) { executeUpdate(REMOVE_LIKE, fId, uId); return fId; }
-    @Override public boolean contains(Long id) { return exists(EXISTS, id); }
+    @Override
+    public Film delete(Long id) {
+        executeUpdate(DELETE, id);
+        return null;
+    }
+
+    @Override
+    public Long addLike(Long fId, Long uId) {
+        executeUpdate(ADD_LIKE, fId, uId);
+        return fId;
+    }
+
+    @Override
+    public Long removeLike(Long fId, Long uId) {
+        executeUpdate(REMOVE_LIKE, fId, uId);
+        return fId;
+    }
+
+    @Override
+    public boolean contains(Long id) {
+        return exists(EXISTS, id);
+    }
 }
