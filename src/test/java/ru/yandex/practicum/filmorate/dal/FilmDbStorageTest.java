@@ -40,7 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FilmDbStorageTest {
 
     private final FilmDbStorage filmStorage;
-    private final GenreDbStorage genreStorage;
     private final UserDbStorage userStorage;
     private final JdbcTemplate jdbcTemplate;
 
@@ -71,8 +70,10 @@ public class FilmDbStorageTest {
         Film created = filmStorage.create(film);
 
         assertThat(created.getId()).isNotNull();
-        Set<Genre> loadedGenres = genreStorage.getGenresByFilmId(created.getId());
-        assertThat(loadedGenres).extracting("id").containsExactlyInAnyOrder(1L, 2L);
+        // Исправлено: получаем жанры через findById самого хранилища фильмов
+        Optional<Film> loadedOpt = filmStorage.findById(created.getId());
+        assertThat(loadedOpt).isPresent();
+        assertThat(loadedOpt.get().getGenres()).extracting("id").containsExactlyInAnyOrder(1L, 2L);
     }
 
     @Test
@@ -102,7 +103,7 @@ public class FilmDbStorageTest {
         created.setName("Updated Title");
         created.setGenres(Set.of(new Genre(4L, "Ужасы")));
 
-        Film updated = filmStorage.update(created);
+        filmStorage.update(created);
 
         Optional<Film> found = filmStorage.findById(created.getId());
         assertThat(found).isPresent();
