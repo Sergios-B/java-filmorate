@@ -34,7 +34,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             FROM films f
             LEFT JOIN mpa_rating mr ON f.mpa_rating_id = mr.rating_id
             LEFT JOIN likes l ON f.film_id = l.film_id
-            GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, 
+            GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
                      f.mpa_rating_id, mr.name
             ORDER BY likes_count DESC, f.film_id
             LIMIT ?
@@ -46,7 +46,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             """;
 
     private static final String UPDATE = """
-            UPDATE films SET name = ?, description = ?, release_date = ?, 
+            UPDATE films SET name = ?, description = ?, release_date = ?,
             duration = ?, mpa_rating_id = ? WHERE film_id = ?
             """;
 
@@ -101,7 +101,9 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
     private void updateGenres(Film film) {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
-        if (film.getGenres() == null || film.getGenres().isEmpty()) return;
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
+            return;
+        }
 
         List<Genre> genres = new ArrayList<>(film.getGenres());
         jdbcTemplate.batchUpdate("INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
@@ -118,7 +120,9 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     private void loadGenresForFilms(List<Film> films) {
-        if (films.isEmpty()) return;
+        if (films.isEmpty()) {
+            return;
+        }
 
         String placeholders = Collections.nCopies(films.size(), "?").stream()
                 .collect(Collectors.joining(","));
@@ -139,7 +143,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             return result;
         }, ids);
 
-        films.forEach(film -> film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>())));
+        films.forEach(film ->
+                film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>())));
     }
 
     @Override
