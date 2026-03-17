@@ -1,55 +1,79 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.List;
+import java.util.Collection;
 
+/**
+ * Контроллер для управления фильмами.
+ * Обрабатывает CRUD-операции и лайки.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
+
     private final FilmService filmService;
 
-    @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        log.info("Получен запрос POST /films");
-        return filmService.create(film);
-    }
-
-    @PutMapping
-    public Film update(@Valid @RequestBody Film film) {
-        log.info("Получен запрос PUT /films");
-        return filmService.update(film);
-    }
-
     @GetMapping
-    public List<Film> findAll() {
-        return filmService.findAll();
+    public Collection<Film> listAllFilms() {
+        log.info("Запрошен список всех фильмов");
+        return filmService.getAllFilms();
     }
 
     @GetMapping("/{id}")
-    public Film findById(@PathVariable Integer id) {
-        return filmService.findById(id);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Integer id, @PathVariable Integer userId) {
-        filmService.addLike(id, userId);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
-        filmService.removeLike(id, userId);
+    public Film fetchFilmById(@PathVariable @Positive(message = "Идентификатор фильма должен быть положительным") Long id) {
+        log.debug("Запрос фильма с id={}", id);
+        return filmService.getFilmById(id);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilms(count);
+    public Collection<Film> fetchPopularFilms(
+            @RequestParam(defaultValue = "10") @Positive(message = "Количество должно быть положительным") Integer count) {
+        log.info("Запрошены популярные фильмы (limit={})", count);
+        return filmService.getMostPopularFilms(count);
+    }
+
+    @PostMapping
+    public Film registerFilm(@Valid @RequestBody Film film) {
+        log.info("Создание нового фильма: \"{}\"", film.getName());
+        return filmService.addFilm(film);
+    }
+
+    @PutMapping
+    public Film modifyFilm(@Valid @RequestBody Film updatedFilm) {
+        log.info("Обновление фильма с id={}", updatedFilm.getId());
+        return filmService.editFilm(updatedFilm);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public Film applyLike(
+            @PathVariable @Positive(message = "ID фильма должен быть положительным") Long id,
+            @PathVariable @Positive(message = "ID пользователя должен быть положительным") Long userId) {
+        log.info("Пользователь {} ставит лайк фильму {}", userId, id);
+        filmService.likeFilm(id, userId);
+        return filmService.getFilmById(id);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film retractLike(
+            @PathVariable @Positive(message = "ID фильма должен быть положительным") Long id,
+            @PathVariable @Positive(message = "ID пользователя должен быть положительным") Long userId) {
+        log.info("Пользователь {} убирает лайк у фильма {}", userId, id);
+        filmService.unlikeFilm(id, userId);
+        return filmService.getFilmById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void excludeFilm(@PathVariable @Positive(message = "ID должен быть положительным") Long id) {
+        log.info("Удаление фильма с id={}", id);
+        filmService.deleteFilm(id);
     }
 }
